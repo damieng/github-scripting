@@ -20,9 +20,12 @@ const labelsToCreate = [
     { name: 'tiny', color: 'fff9c4', description: 'Tiny review' },
 ];
 
+// Regular source, should not need to change
+var startCommand = process.platform == 'darwin'? 'open': process.platform == 'win32'? 'start': 'xdg-open';
+var openUrl = (url) => cp.exec(`${startCommand} ${url}`);
 var octokit = new Octokit(
     {
-        auth: accessToken,
+        auth: personalAccessToken,
         userAgent: 'PR Process Script',
         baseUrl: `https://api.${gitHubUrl}`,
         log: {
@@ -61,7 +64,7 @@ async function run(owner, repo) {
       const pr = (await octokit.pulls.create({ owner, repo, title: message, head: branch, base: repository.default_branch })).data;
       console.log(`Created PR #${pr.number}`);    
       const review = (await octokit.pulls.createReviewRequest({ owner, repo, pull_number: pr.number, team_reviewers: [ reviewTeam ]})).data;
-      cp.exec(`https://${gitHubUrl}/${owner}/${repo}/pull/${pr.number}`)
+      openUrl(`https://${gitHubUrl}/${owner}/${repo}/pull/${pr.number}`)
     }
     catch
     {
@@ -69,4 +72,9 @@ async function run(owner, repo) {
     }
 }
 
-run(...process.argv[2].split('/'));
+if (personalAccessToken === 'your personal access token') {
+    console.log('No personal access token specified, opening browser to create one... copy it into the source!');
+    openUrl(`https://${gitHubUrl}/settings/tokens`);
+} else {
+    run(...process.argv[2].split('/'));
+}
