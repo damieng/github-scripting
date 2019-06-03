@@ -14,10 +14,10 @@ const branch = 'add-codeowners';
 const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
 const message = 'Setup the CODEOWNERS for pull request reviews';
 const labelsToCreate = [
-    { name: 'large', color: 'ff7043', description: 'Large review' },
-    { name: 'medium', color: 'ffb74d', description: 'Medium review' },
-    { name: 'small', color: 'ffe082', description: 'Small review' },
-    { name: 'tiny', color: 'fff9c4', description: 'Tiny review' },
+    { name: 'review:large', color: 'ff7043', description: 'Large review' },
+    { name: 'review:medium', color: 'ffb74d', description: 'Medium review' },
+    { name: 'review:small', color: 'ffe082', description: 'Small review' },
+    { name: 'review:tiny', color: 'fff9c4', description: 'Tiny review' },
 ];
 
 // Regular source, should not need to change
