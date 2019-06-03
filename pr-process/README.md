@@ -9,7 +9,7 @@ Helps setup a Pull Review process by:
 
 ## Setup
 
-Modify the scripts 'essential settings' section with your personal access token, team name for reviews etc.
+Modify the scripts 'essential settings' section with your personal access token (repo level permission), team name for reviews etc.
 
 ```javascript
 // Essential settings - change these as we can't have defaults
@@ -28,7 +28,7 @@ If you wish to use multiple reviewers or individuals rather than teams you'll ne
 Run the script with the org/repo name, e.g.
 
 ```bash
-node app.js @damieng/some-repo
+node app.js damieng/some-repo
 ```
 
 Enjoy!
