@@ -48,7 +48,7 @@ async function run(owner, repo) {
             .map(l => ({ owner, repo, name: l.name, color: l.color, description: l.description }))
             .map(l => octokit.issues.createLabel(l)));
     }
-    catch
+    catch (e) 
     {
         console.log('One or more labels probably existed (Go check)');
     }
@@ -66,7 +66,7 @@ async function run(owner, repo) {
       const review = (await octokit.pulls.createReviewRequest({ owner, repo, pull_number: pr.number, team_reviewers: [ reviewTeam ]})).data;
       openUrl(`https://${gitHubUrl}/${owner}/${repo}/pull/${pr.number}`)
     }
-    catch
+    catch (e)
     {
       console.log('Probably already had a .github/CODEOWNERS file (Go check)');
     }
