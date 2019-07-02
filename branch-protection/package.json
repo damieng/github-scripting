@@ -1,0 +1,14 @@
+{
+  "name": "branch-protection",
+  "version": "1.0.0",
+  "description": "Setup branch protection for master",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Damien Guard <damieng@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^16.25.1"
+  }
+}
