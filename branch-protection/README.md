@@ -8,26 +8,29 @@ Helps setup a master branch protection policy by setting:
     - *Restrict who can dismiss pull request reviews*: your team list
 - *Require status checks to pass before merging*: `true`
     - *Require branches to be up to date*: `true`
-    - *Status checks required list*: preserved if exists
+    - *Status checks required list*: any that succeeded in last 30 days
 - *Include administrators*: `false`
 - *Restrict who can push to matching branches*: your team list 
 
 (You can easily change these in the code)
+
 ## Setup
 
-Modify the scripts 'essential settings' section with your personal access token, team name for reviews etc.
+Modify the scripts 'essential settings' section with your personal access token, team name for reviews etc. and quickly review the 'optional tweaks'.
 
 ```javascript
 // Essential settings - change these as we can't have defaults
 const personalAccessToken = 'your personal access token';
 const reviewTeams = [ 'your-team' ];
+
+// Optional tweaks - these are sensible defaults
+const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
 const dismissTeams = reviewTeams;
+const copyChecksFromRef = [ 'master' ];
+const daysPriorWithSuccessfulChecks = 30;
 ```
 
 If you wish to change the settings simply change the object around line 45 to set the settings you want or do not want.
-
-
-If you wish to use multiple reviewers or individuals rather than teams you'll need to modify the script - specifically the lines that create the codeowners file (one individual/team per line) and the line that creates the PR to merge it in - array and/or switching from team_approvers to approvers.
 
 ## Running
 

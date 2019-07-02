@@ -3,11 +3,13 @@ const cp = require('child_process');
 
 // Essential settings - change these as we can't have defaults
 const personalAccessToken = 'your personal access token';
-const reviewTeams = [ 'your-team-name' ];
+const reviewTeams = [ 'your-team' ];
 
 // Optional tweaks - these are sensible defaults
 const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
 const dismissTeams = reviewTeams;
+const copyChecksFromRef = [ 'master' ];
+const daysPriorWithSuccessfulChecks = 30;
 
 // Regular source, should not need to change
 var startCommand = process.platform == 'darwin'? 'open': process.platform == 'win32'? 'start': 'xdg-open';
@@ -28,20 +30,22 @@ var octokit = new Octokit(
 );
 
 async function run(owner, repo) {
-    console.log('Setting up branch protection ...');
+    const since = new Date();
+    since.setDate(since.getDate() - daysPriorWithSuccessfulChecks);
+    console.log(`Getting last 30 days of commits from ${owner}/${repo}:${copyChecksFromRef}`)
+    const lastCommits = (await octokit.repos.listCommits({owner, repo, since})).data;
 
-    let existingBranchProtection;
-    let checks = [];
-
-    try {
-      existingBranchProtection = (await octokit.repos.getBranchProtection({ owner, repo, branch: 'master' })).data;
-      checks = existingBranchProtection.required_status_checks.contexts;
-      console.log(`Existing branch protection found, checks are: [ ${checks.map(c => "'" + c + "'").join(', ')} ]`);
+    console.log(`Getting known successful status checks`)
+    const statusChecks = new Set();
+    for (let commit of lastCommits) {
+        const existingStatus = (await octokit.repos.listStatusesForRef({ owner, repo, ref: commit.sha })).data;
+        for (let status of existingStatus.filter(s => s.state == 'success'))
+            statusChecks.add(status.context);
     }
-    catch {
-        console.log(`No existing branch protection found. Must setup checks manually (no API)!`);
-    }
 
+    const contexts = Array.from(statusChecks);
+
+    console.log(`Setting up branch protection with checks [ ${contexts.map(c => "'" + c + "'").join(', ')} ] ...`);
     const branchProtectionParams = {
         "owner": owner,
         "repo": repo,
@@ -49,7 +53,7 @@ async function run(owner, repo) {
         "enforce_admins": false,
         "required_status_checks": {
             "strict": true,
-            "contexts": checks,
+            "contexts": contexts,
         },
         "required_pull_request_reviews": {
             "required_approving_review_count": 1,
