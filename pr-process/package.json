@@ -9,6 +9,6 @@
   "author": "Damien Guard <damieng@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@octokit/rest": "^16.25.1"
+    "@octokit/rest": "github:octokit/rest.js"
   }
 }
