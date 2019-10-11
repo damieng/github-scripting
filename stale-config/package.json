@@ -1,0 +1,14 @@
+{
+  "name": "stale-config",
+  "version": "1.0.0",
+  "description": "Setup a .github/stale.yml and stale label",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Damien Guard <damieng@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "github:octokit/rest.js"
+  }
+}
