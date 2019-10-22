@@ -2,14 +2,20 @@ const Octokit = require('@octokit/rest');
 const cp = require('child_process');
 const fs = require('fs');
 
+require('dotenv').config({ path: '../.env' });
+
 // Essential settings - change these as we can't have defaults
-const personalAccessToken = '';
+const personalAccessToken = process.env.GITHUB_API_TOKEN;
+const committer = {
+    name: process.env.YOUR_GITHUB_NAME,
+    email: process.env.YOUR_GITHUB_EMAIL
+};
 
 // Optional tweaks - these are sensible defaults
 const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
 const message = 'Setup the .github/stale.yml for Probot:Stale';
 const labelsToCreate = [
-    { name: 'stale', color: '666666', description: 'Stale' },
+    { name: 'closed:stale', color: 'cfd3d7', description: 'Issue or PR has not seen activity recently' },
 ];
 
 // Regular source, should not need to change
@@ -50,16 +56,66 @@ async function createLabels(owner, repo) {
 }
 
 async function updateStaleDirect(owner, repo) {
-    fs.readFile("stale.yml", function(err, content) {
+    fs.readFile("stale.yml", async function(err, content) {
         if (err) throw err;
 
-        const repository = (await octokit.repos.get({ owner, repo })).data;
+        let repository = {};
+        try {
+            repository = (await octokit.repos.get({ owner, repo })).data;
+        } catch( error ) {
+            console.log( 'Error getting repo: ' + formatErrorMessage(error) );
+            return;
+        }
+
         const defaultBranch = repository.default_branch;
         console.log(`Updating ${stalePath} on ${defaultBranch} ...`);
-        const existing = (await octokit.repos.getContents({owner, repo, path: stalePath, branch: defaultBranch})).data;
-        const updateFile = await octokit.repos.createOrUpdateFile(
-            { owner, repo, path: stalePath, message, content, committer, author: committer, branch: defaultBranch, sha: existing.sha })
+        
+        let getContentsOpts = {
+            owner, 
+            repo, 
+            path: stalePath, 
+            branch: defaultBranch
+        };
+        
+        let existing = {};
+        try {
+            existing = (await octokit.repos.getContents(getContentsOpts)).data;
+            console.log( stalePath + ' exists. Updating ...' );
+        } catch( err ) {
+            if (404 !== err.status) {
+                console.log( 'Error getting repo contents: ' + formatErrorMessage(error) );
+                console.log(getContentsOpts);
+            }
+
+            console.log( stalePath + ' does not exist. Creating ...' );
+        }
+
+        let updateFileOpts = { 
+            owner, 
+            repo, 
+            path: stalePath, 
+            message, 
+            content: Buffer.from(content).toString('base64'), 
+            committer, 
+            author: committer, 
+            branch: defaultBranch,
+            sha: existing.sha
+        };
+
+        try {
+            const updateFile = await octokit.repos.createOrUpdateFile(updateFileOpts)
+        } catch( error ) {
+            console.log( 'Error creating or updating file: ' + formatErrorMessage(error) );
+            console.log(updateFileOpts);
+            return;
+        }
+
+        console.log( stalePath + ' created or updated' );
     })
+}
+
+function formatErrorMessage(error) {
+    return ( err.name || 'Unknown error name' ) + ' - ' + ( err.status || 'Unknown error code' );
 }
 
 if (personalAccessToken === 'your personal access token') {
