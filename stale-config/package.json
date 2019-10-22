@@ -9,6 +9,7 @@
   "author": "Damien Guard <damieng@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@octokit/rest": "github:octokit/rest.js"
+    "@octokit/rest": "github:octokit/rest.js",
+    "dotenv": "^8.2.0"
   }
 }
