@@ -1,12 +1,14 @@
 const Octokit = require('@octokit/rest');
 const cp = require('child_process');
 
+require('dotenv').config({ path: '../.env' })
+
 // Essential settings - change these as we can't have defaults
-const personalAccessToken = '';
-const reviewTeam = '';
+const personalAccessToken = process.env.GITHUB_API_TOKEN;
+const reviewTeam = process.env.REVIEW_TEAM_NAME;
 const committer = {
-    name: '',
-    email: ''
+    name: process.env.YOUR_GITHUB_NAME,
+    email: process.env.YOUR_GITHUB_EMAIL
 };
 
 // Optional tweaks - these are sensible defaults
@@ -14,10 +16,26 @@ const prBranch = 'add-codeowners';
 const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
 const message = 'Setup the CODEOWNERS for pull request reviews';
 const labelsToCreate = [
+    // PR review tags
     { name: 'review:large', color: 'ff7043', description: 'Large review' },
     { name: 'review:medium', color: 'ffb74d', description: 'Medium review' },
     { name: 'review:small', color: 'ffe082', description: 'Small review' },
     { name: 'review:tiny', color: 'fff9c4', description: 'Tiny review' },
+
+    // Goalie-specific
+    { name: '[Goalie] Review Required', color: 'ccff00', description: 'Goalie triaged, ready for team review' },
+
+    // PR labels for changelog generation
+    { name: 'CH: Added', color: '5319e7', description: 'PR is adding feature or functionality' },
+    { name: 'CH: Breaking Change', color: '5319e7', description: 'PR contains breaking changes without a major version bump' },
+    { name: 'CH: Deprecated', color: '5319e7', description: 'PR is deprecating something in the public API' },
+    { name: 'CH: Fixed', color: '5319e7', description: 'PR is fixing a bug' },
+    { name: 'CH: Changed', color: '5319e7', description: 'PR is changing something' },
+    { name: 'CH: Removed', color: '5319e7', description: 'PR is removing something' },
+    { name: 'CH: Security', color: '5319e7', description: 'PR is security improvement' },
+
+    // PR closing reasons
+    { name: 'closed:stale', color: 'cfd3d7', description: 'Issue or PR has not seen activity recently' },
 ];
 
 // Regular source, should not need to change
