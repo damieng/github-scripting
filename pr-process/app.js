@@ -1,6 +1,11 @@
 const Octokit = require('@octokit/rest');
 const cp = require('child_process');
 
+let additionalLabels = [];
+try {
+    additionalLabels = require('./additional-labels');
+} catch (error) {}
+
 require('dotenv').config({ path: '../.env' })
 
 // Essential settings - change these as we can't have defaults
@@ -22,9 +27,6 @@ const labelsToCreate = [
     { name: 'review:small', color: 'ffe082', description: 'Small review' },
     { name: 'review:tiny', color: 'fff9c4', description: 'Tiny review' },
 
-    // Goalie-specific
-    { name: '[Goalie] Review Required', color: 'ccff00', description: 'Goalie triaged, ready for team review' },
-
     // PR labels for changelog generation
     { name: 'CH: Added', color: '5319e7', description: 'PR is adding feature or functionality' },
     { name: 'CH: Breaking Change', color: '5319e7', description: 'PR contains breaking changes without a major version bump' },
@@ -32,11 +34,8 @@ const labelsToCreate = [
     { name: 'CH: Fixed', color: '5319e7', description: 'PR is fixing a bug' },
     { name: 'CH: Changed', color: '5319e7', description: 'PR is changing something' },
     { name: 'CH: Removed', color: '5319e7', description: 'PR is removing something' },
-    { name: 'CH: Security', color: '5319e7', description: 'PR is security improvement' },
-
-    // PR closing reasons
-    { name: 'closed:stale', color: 'cfd3d7', description: 'Issue or PR has not seen activity recently' },
-];
+    { name: 'CH: Security', color: '5319e7', description: 'PR is security improvement' }
+].concat(additionalLabels);
 
 // Regular source, should not need to change
 const content = Buffer.from(`*\t${reviewTeam}\n`).toString('base64');
