@@ -9,19 +9,18 @@ Helps setup a Pull Review process by:
 
 ## Setup
 
-Modify the scripts 'essential settings' section with your personal access token (repo level permission), team name for reviews etc.
+Provide a `.env` file in the root directory with the contents of `.env-sample`. They make the 'essential settings' and include your personal access token (repo level permission), team name for reviews, etc.
 
 ```javascript
-// Essential settings - change these as we can't have defaults
-const personalAccessToken = 'your personal access token';
-const reviewTeam = '@your-org/@your-team';
-const committer = {
-    name: 'Your Name',
-    email: 'Your Email'
-};
+GITHUB_API_TOKEN=82832askd9knsia42dbueiabdi2asndpasd1wwe
+REVIEW_TEAM_NAME=dx-sdks-approver
+YOUR_GITHUB_NAME=damieng
+YOUR_GITHUB_EMAIL=damien.guard@auth0.com
 ```
 
-If you wish to use multiple reviewers or individuals rather than teams you'll need to modify the script - specifically the lines that create the codeowners file (one individual/team per line) and the line that creates the PR to merge it in - array and/or switching from team_approvers to approvers.
+Do note the team name does not prefix the organization.
+
+If you wish to use multiple reviewers or individuals rather than teams you'll need to modify the script - specifically the lines that create the CODEOWNERS file (one individual/team per line) and the line that creates the PR to merge it in - array and/or switching from team_approvers to approvers.
 
 ## Running
 
