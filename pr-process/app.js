@@ -38,7 +38,6 @@ const labelsToCreate = [
 ].concat(additionalLabels);
 
 // Regular source, should not need to change
-const content = Buffer.from(`*\t${reviewTeam}\n`).toString('base64');
 const codeOwnersPath = '.github/CODEOWNERS';
 const startCommand = process.platform == 'darwin'? 'open': process.platform == 'win32'? 'start': 'xdg-open';
 const openUrl = (url) => cp.exec(`${startCommand} ${url}`);
@@ -65,7 +64,7 @@ async function run(owner, repo) {
     // Use this to setup a new flow with a PR
     await createCodeOwnersPR(owner, repo);
     // OR this one to modify and existing directly
-//    await updateCodeOwnersDirect(owner, repo);
+    // await updateCodeOwnersDirect(owner, repo);
 }
 
 async function createLabels(owner, repo) {
@@ -94,19 +93,40 @@ async function createCodeOwnersPR(owner, repo) {
     console.log(`Creating Pull Request to add ${codeOwnersPath} ...`);
     const repository = (await octokit.repos.get({ owner, repo })).data;
     const latest = (await octokit.repos.listCommits({ owner, repo, sha: repository.default_branch, per_page: 1 })).data[0];
-    const newBranch = (await octokit.git.createRef({ owner, repo, ref: 'refs/heads/' + prBranch, sha: latest.sha})).data;
     try {
-      const createFile = (await octokit.repos.createOrUpdateFile(
-          { owner, repo, path: codeOwnersPath, message, content, committer, author: committer, branch: prBranch }
-      ));
-      const pr = (await octokit.pulls.create({ owner, repo, title: message, head: prBranch, base: repository.default_branch })).data;
-      console.log(`Created PR #${pr.number}`);    
-      const review = (await octokit.pulls.createReviewRequest({ owner, repo, pull_number: pr.number, team_reviewers: [ reviewTeam ]})).data;
-      openUrl(`https://${gitHubUrl}/${owner}/${repo}/pull/${pr.number}`)
+        const newBranch = (await octokit.git.createRef({ owner, repo, ref: 'refs/heads/' + prBranch, sha: latest.sha})).data;
+    } catch (e) {
+        if (e.status == 422){
+            console.log(`Branch already exists, please delete it first (Go check)`);
+            openUrl(`https://${gitHubUrl}/${owner}/${repo}/branches`)
+            return
+        }
     }
-    catch (e)
-    {
-      console.log(`Probably already had a ${codeOwnersPath} file (Go check)`);
+    
+    const content = Buffer.from(`*\t@${owner}/${reviewTeam}\n`).toString('base64');
+    const requestPayload = { owner, repo, path: codeOwnersPath, message, content, committer, author: committer, branch: prBranch}
+    try {
+        const existingFile = (await octokit.repos.getContents({owner, repo, path: codeOwnersPath, branch: repository.default_branch}))
+        if (existingFile.status == 200){
+            const contentEquals = existingFile.data.content.trim() === content.trim()
+            if (contentEquals) {
+                console.log(`Already had a ${codeOwnersPath} file with these contents.`);
+                return
+            }
+            console.log(`Already had a ${codeOwnersPath} file. Updating the contents now.`);
+            requestPayload.sha = existingFile.data.sha
+        }
+    } catch (e) {
+        //file doesn't exist
+    }
+    try {
+        const createFile = (await octokit.repos.createOrUpdateFile(requestPayload));
+        const pr = (await octokit.pulls.create({ owner, repo, title: message, head: prBranch, base: repository.default_branch })).data;
+        console.log(`Created PR #${pr.number}`);    
+        const review = (await octokit.pulls.createReviewRequest({ owner, repo, pull_number: pr.number, team_reviewers: [ reviewTeam ]})).data;
+        openUrl(`https://${gitHubUrl}/${owner}/${repo}/pull/${pr.number}`)
+    } catch (e) {
+      console.log(`Something happened:`, e);
     }
 }
 
