@@ -16,13 +16,20 @@ Helps setup a master branch protection policy by setting:
 
 ## Setup
 
-Modify the scripts 'essential settings' section with your personal access token, team name for reviews etc. and quickly review the 'optional tweaks'.
+Provide a `.env` file in the root directory with the contents of `.env-sample`. They make the 'essential settings' and include your personal access token (repo level permission), team name for reviews, etc.
 
 ```javascript
-// Essential settings - change these as we can't have defaults
-const personalAccessToken = 'your personal access token';
-const reviewTeams = [ 'your-team' ];
+GITHUB_API_TOKEN=82832askd9knsia42dbueiabdi2asndpasd1wwe
+REVIEW_TEAM_NAME=dx-sdks-approver
+YOUR_GITHUB_NAME=damieng
+YOUR_GITHUB_EMAIL=damien.guard@auth0.com
+```
 
+Do note the team name does not prefix the organization.
+
+There are also additional but optional tweaks you can change
+
+```javascript
 // Optional tweaks - these are sensible defaults
 const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
 const dismissTeams = reviewTeams;
@@ -30,7 +37,7 @@ const copyChecksFromRef = [ 'master' ];
 const daysPriorWithSuccessfulChecks = 30;
 ```
 
-If you wish to change the settings simply change the object around line 45 to set the settings you want or do not want.
+If you wish to change the settings simply change the object around line 50 to set the settings you want or do not want.
 
 ## Running
 

@@ -1,9 +1,10 @@
 const Octokit = require('@octokit/rest');
 const cp = require('child_process');
+require('dotenv').config({ path: '../.env' })
 
 // Essential settings - change these as we can't have defaults
-const personalAccessToken = 'your personal access token';
-const reviewTeams = [ 'your-team' ];
+const personalAccessToken = process.env.GITHUB_API_TOKEN;
+const reviewTeams = [ process.env.REVIEW_TEAM_NAME ];
 
 // Optional tweaks - these are sensible defaults
 const gitHubUrl = 'github.com'; // Change this if GitHub Enterprise
